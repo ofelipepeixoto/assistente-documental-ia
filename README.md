@@ -23,3 +23,11 @@ Em desenvolvimento. Ainda não há aplicação funcional nem resultados de avali
 - Indicação clara quando os documentos não contiverem a resposta.
 - Nenhum envio ou publicação automática de peças.
 - Testes com perguntas e respostas esperadas, usando dados fictícios.
+## Como executar
+
+Requer Python 3. Não há bibliotecas externas nesta primeira versão.
+
+Na pasta principal do projeto, execute:
+
+```bash
+python exemplos/app.py
