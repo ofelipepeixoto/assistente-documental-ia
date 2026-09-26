@@ -1,0 +1,9 @@
+[
+  {"pergunta": "Qual é o prazo?", "clausula_esperada": "Cláusula 2"},
+  {"pergunta": "Quando começa o contrato?", "clausula_esperada": "Cláusula 2"},
+  {"pergunta": "Qual é o pagamento mensal?", "clausula_esperada": "Cláusula 3"},
+  {"pergunta": "Qual é a antecedência para rescindir?", "clausula_esperada": "Cláusula 4"},
+  {"pergunta": "Qual é o objeto do serviço?", "clausula_esperada": "Cláusula 1"},
+  {"pergunta": "Qual é a cor do logotipo?", "clausula_esperada": null},
+  {"pergunta": "Qual é a multa de rescisão?", "clausula_esperada": null}
+]
