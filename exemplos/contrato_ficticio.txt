@@ -1,0 +1,15 @@
+DOCUMENTO FICTÍCIO — APENAS PARA DEMONSTRAÇÃO
+
+Contrato de prestação de serviços entre Empresa Exemplo Ltda. e Cliente Fictício.
+
+Cláusula 1 — Objeto
+A Empresa Exemplo prestará serviços de organização de documentos digitais.
+
+Cláusula 2 — Prazo
+O contrato terá duração de 12 meses a partir de 1º de janeiro de 2026.
+
+Cláusula 3 — Pagamento
+O pagamento será de R$ 500 por mês, com vencimento no dia 10.
+
+Cláusula 4 — Rescisão
+Qualquer parte poderá rescindir o contrato mediante aviso escrito com 30 dias de antecedência.
