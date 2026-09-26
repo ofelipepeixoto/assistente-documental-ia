@@ -40,7 +40,7 @@ O programa mostrará o trecho encontrado e o nome do documento de origem.
 Para executar as verificações manualmente:
 
 ```bash
-python -m unittest -v test_busca.py test_resposta_ia.py
+python -m unittest -v test_busca.py test_resposta_ia.py test_avaliacao_demo.py
 ```
 
 Os testes também rodam automaticamente na aba Ações a cada alteração.
@@ -72,3 +72,11 @@ Configure `OPENAI_API_KEY` apenas no ambiente local caso queira usar a API; não
 ## Limites
 
 A busca seleciona um único trecho por coincidência de palavras; não garante que a cláusula responda à pergunta. Não há avaliação publicada das respostas do modelo, interface gráfica ou publicação de peças. Os testes automatizados cobrem a busca, a fonte, a ausência de correspondência e o caminho sem chave, sem chamar API externa.
+
+## Avaliação reproduzível
+
+Execute `python avaliar.py` para comparar a cláusula encontrada com sete perguntas sobre o contrato fictício. O baseline medido foi **5/7 acertos**: a busca não encontrou a data de início quando a pergunta usou «começa» e mostrou a cláusula de rescisão para uma pergunta sobre multa, embora o contrato não informe multa. Encontrar um trecho relacionado **não prova** que ele responde à pergunta. O arquivo `avaliacao/casos.json` contém as expectativas; os testes impedem que o baseline seja descrito como sucesso completo.
+
+## Interface local de demonstração
+
+Execute `python demo_web.py` e abra `http://127.0.0.1:8000` no navegador. A página faz apenas a busca local e mostra o trecho e a fonte; não usa a API nem gera peça jurídica. O servidor escuta somente no computador local (`127.0.0.1`) e é uma demonstração, não um serviço de produção. Encerre com Ctrl+C.
