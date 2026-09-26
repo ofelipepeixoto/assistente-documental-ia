@@ -25,9 +25,28 @@ Em desenvolvimento. Ainda não há aplicação funcional nem resultados de avali
 - Testes com perguntas e respostas esperadas, usando dados fictícios.
 ## Como executar
 
-Requer Python 3. Não há bibliotecas externas nesta primeira versão.
+Requer Python 3. Esta versão não usa bibliotecas externas.
 
 Na pasta principal do projeto, execute:
 
 ```bash
 python exemplos/app.py
+```
+
+Digite uma pergunta, por exemplo: `Qual é o prazo?`
+
+O programa mostrará o trecho encontrado e o nome do documento de origem.
+
+Para executar as verificações manualmente:
+
+```bash
+python test_busca.py
+```
+
+Os testes também rodam automaticamente na aba Ações a cada alteração.
+
+## Estado atual
+
+- Busca por palavras com indicação da fonte: implementada e verificada.
+- Respostas geradas por modelo de IA: ainda não implementadas.
+- Interface para usuários: ainda não implementada.
