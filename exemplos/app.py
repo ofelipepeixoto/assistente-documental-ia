@@ -2,7 +2,7 @@ from pathlib import Path
 import re
 import unicodedata
 
-PASTA_DOCUMENTOS = Path("exemplos")
+PASTA_DOCUMENTOS = Path(__file__).resolve().parent
 PALAVRAS_COMUNS = {
     "a", "as", "o", "os", "de", "do", "da", "dos", "das",
     "e", "em", "um", "uma", "qual", "quais", "com", "para",
