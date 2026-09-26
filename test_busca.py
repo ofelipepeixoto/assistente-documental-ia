@@ -1,24 +1,29 @@
+import unittest
+
 from exemplos.app import buscar
 
 
-def test_encontra_prazo():
-    resultado = buscar("Qual é o prazo?")
-    assert "Cláusula 2" in resultado
-    assert "contrato_ficticio.txt" in resultado
+class TestBusca(unittest.TestCase):
+    def test_encontra_prazo(self):
+        resultado = buscar("Qual é o prazo?")
+        self.assertIn("Cláusula 2", resultado)
+        self.assertIn("contrato_ficticio.txt", resultado)
 
 
-def test_encontra_rescisao():
-    resultado = buscar("Qual é a antecedência para rescindir?")
-    assert "Cláusula 4" in resultado
+    def test_encontra_rescisao(self):
+        resultado = buscar("Qual é a antecedência para rescindir?")
+        self.assertIn("Cláusula 4", resultado)
 
 
-def test_nao_inventa_resposta():
-    resultado = buscar("Qual é a cor do logotipo?")
-    assert "Não encontrei" in resultado
+    def test_nao_inventa_resposta(self):
+        resultado = buscar("Qual é a cor do logotipo?")
+        self.assertIn("Não encontrei", resultado)
+
+    def test_encontra_pagamento(self):
+        resultado = buscar("Qual é o pagamento mensal?")
+        self.assertIn("Cláusula 3", resultado)
+        self.assertIn("R$ 500", resultado)
 
 
 if __name__ == "__main__":
-    test_encontra_prazo()
-    test_encontra_rescisao()
-    test_nao_inventa_resposta()
-    print("3 verificações passaram.")
+    unittest.main()
