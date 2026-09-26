@@ -1,0 +1,19 @@
+name: Verificar busca documental
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Obter arquivos do projeto
+        uses: actions/checkout@v6
+
+      - name: Executar verificações
+        run: python3 test_busca.py
