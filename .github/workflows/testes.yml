@@ -15,5 +15,5 @@ jobs:
       - name: Obter arquivos do projeto
         uses: actions/checkout@v6
 
-      - name: Executar verificações
-        run: python3 test_busca.py
+      - name: Executar verificações sem chave de API
+        run: env -u OPENAI_API_KEY python3 -m unittest -v test_busca.py test_resposta_ia.py
