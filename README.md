@@ -15,7 +15,7 @@ Permitir que uma pessoa faça uma pergunta sobre documentos e encontre os trecho
 
 ## Estado do projeto
 
-Em desenvolvimento. Ainda não há aplicação funcional nem resultados de avaliação publicados.
+A busca local é funcional. `resposta_ia.py` também oferece geração opcional de rascunho pela API quando há trecho e chave configurada; esse caminho ainda não tem avaliação de qualidade publicada. Sem chave, retorna apenas a busca e a fonte. Ainda não há interface gráfica nem envio automático de peças.
 
 ## Critérios para a primeira versão
 
@@ -25,7 +25,7 @@ Em desenvolvimento. Ainda não há aplicação funcional nem resultados de avali
 - Testes com perguntas e respostas esperadas, usando dados fictícios.
 ## Como executar
 
-Requer Python 3. Esta versão não usa bibliotecas externas.
+Requer Python 3. A busca local não usa bibliotecas externas.
 
 Na pasta principal do projeto, execute:
 
@@ -40,13 +40,35 @@ O programa mostrará o trecho encontrado e o nome do documento de origem.
 Para executar as verificações manualmente:
 
 ```bash
-python test_busca.py
+python -m unittest -v test_busca.py test_resposta_ia.py
 ```
 
 Os testes também rodam automaticamente na aba Ações a cada alteração.
 
-## Estado atual
+## Resposta opcional com IA
 
-- Busca por palavras com indicação da fonte: implementada e verificada.
-- Respostas geradas por modelo de IA: ainda não implementadas.
-- Interface para usuários: ainda não implementada.
+O script `resposta_ia.py` usa o trecho da busca para pedir um rascunho ao modelo. Para executar sem chave, basta `python resposta_ia.py`: ele mostra a fonte e o trecho, sem instalar ou chamar a biblioteca `openai`. Perguntas sem correspondência mostram um aviso, mesmo com chave. Para habilitar a geração, crie um ambiente virtual e instale a dependência:
+
+**Windows (PowerShell):**
+
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install openai
+python resposta_ia.py
+```
+
+**macOS/Linux:**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install openai
+python resposta_ia.py
+```
+
+Configure `OPENAI_API_KEY` apenas no ambiente local caso queira usar a API; não é necessária nos testes ou no GitHub Actions. `OPENAI_MODEL` é opcional e o código usa `gpt-5-mini` como padrão. A chamada pode gerar custos e envia a pergunta e o trecho ao provedor. Não inclua chaves ou documentos reais de clientes no repositório. Um rascunho exige revisão humana e não constitui aconselhamento jurídico.
+
+## Limites
+
+A busca seleciona um único trecho por coincidência de palavras; não garante que a cláusula responda à pergunta. Não há avaliação publicada das respostas do modelo, interface gráfica ou publicação de peças. Os testes automatizados cobrem a busca, a fonte, a ausência de correspondência e o caminho sem chave, sem chamar API externa.
