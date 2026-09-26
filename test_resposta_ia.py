@@ -26,8 +26,15 @@ class TestRespostaSemApi(unittest.TestCase):
         self.assertIn("12 meses", resultado)
 
     def test_sem_trecho_nao_chama_api_mesmo_com_chave(self):
+        original_import = builtins.__import__
+
+        def impedir_openai(name, *args, **kwargs):
+            if name == "openai":
+                raise AssertionError("Não deve importar openai sem trecho")
+            return original_import(name, *args, **kwargs)
+
         with patch.dict(os.environ, {"OPENAI_API_KEY": "chave-ficticia"}), patch(
-            "builtins.__import__", side_effect=AssertionError("Não deve importar API")
+            "builtins.__import__", side_effect=impedir_openai
         ):
             resultado = responder("Qual é a cor do logotipo?")
 
