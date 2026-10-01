@@ -1,0 +1,104 @@
+{
+  "corpus": "PDFs sintéticos PT-BR; WinAnsi/Helvetica; NÃO corpus jurídico real",
+  "pipeline": {
+    "pipeline": "pdf-lab-1",
+    "parser_version": "6.19.0",
+    "limits": {
+      "max_bytes": 10485760,
+      "max_pages": 50,
+      "max_page_chars": 100000,
+      "max_document_chars": 500000,
+      "timeout_seconds": 20,
+      "min_letters": 20
+    }
+  },
+  "native_pages": 3,
+  "cer_normalizado": 0.0,
+  "wer_normalizado": 0.0,
+  "bloqueio_antes_revisao": true,
+  "scan_sinalizado": true,
+  "casos": [
+    {
+      "pergunta": "Qual é o prazo de vigência?",
+      "esperado": [
+        1
+      ],
+      "encontrado": [
+        1
+      ],
+      "acertou": true,
+      "citacoes": [
+        "contrato_demo.pdf — página 1"
+      ]
+    },
+    {
+      "pergunta": "Qual é o pagamento mensal?",
+      "esperado": [
+        2
+      ],
+      "encontrado": [
+        2
+      ],
+      "acertou": true,
+      "citacoes": [
+        "contrato_demo.pdf — página 2"
+      ]
+    },
+    {
+      "pergunta": "vigência começa",
+      "esperado": [
+        1
+      ],
+      "encontrado": [
+        1
+      ],
+      "acertou": true,
+      "citacoes": [
+        "contrato_demo.pdf — página 1"
+      ]
+    },
+    {
+      "pergunta": "multa rescisão",
+      "esperado": [
+        2
+      ],
+      "encontrado": [
+        2
+      ],
+      "acertou": true,
+      "citacoes": [
+        "contrato_demo.pdf — página 2"
+      ]
+    },
+    {
+      "pergunta": "aviso antecedência",
+      "esperado": [
+        3
+      ],
+      "encontrado": [
+        3
+      ],
+      "acertou": true,
+      "citacoes": [
+        "contrato_demo.pdf — página 3"
+      ]
+    },
+    {
+      "pergunta": "Qual é a cor do logotipo?",
+      "esperado": [],
+      "encontrado": [],
+      "acertou": true,
+      "citacoes": []
+    },
+    {
+      "pergunta": "penalidade criminal",
+      "esperado": [],
+      "encontrado": [],
+      "acertou": true,
+      "citacoes": []
+    }
+  ],
+  "acertos": 7,
+  "total_casos": 7,
+  "ocr_inferencia_executada": false
+}

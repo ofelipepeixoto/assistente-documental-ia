@@ -1,82 +1,118 @@
 # Assistente documental com IA
 
-Protótipo em desenvolvimento para ajudar na consulta de documentos jurídicos fictícios, apresentando as fontes usadas em cada resposta.
+Laboratório para consultar documentos com fontes e revisão humana. A nova etapa PDF funciona localmente: **abrir arquivo → conferir páginas → aprovar ou corrigir → pesquisar trechos citados**.
 
-## Objetivo
+Use exemplos fictícios ou documentos que você tem autorização para processar. Não há publicação de peças, aconselhamento jurídico ou aprovação automática.
 
-Permitir que uma pessoa faça uma pergunta sobre documentos e encontre os trechos relevantes antes de preparar um rascunho para revisão humana.
+## Testar a interface PDF
 
-## Fluxo previsto
+Requer Python 3.11 ou 3.12. Na pasta do projeto:
 
-1. Adicionar documentos de exemplo, sem dados de clientes ou processos reais.
-2. Buscar os trechos relacionados à pergunta.
-3. Produzir uma resposta com referência aos documentos consultados.
-4. Encaminhar o resultado para revisão humana.
+**Windows / PowerShell**
 
-## Estado do projeto
-
-A busca local é funcional. `resposta_ia.py` também oferece geração opcional de rascunho pela API quando há trecho e chave configurada; esse caminho ainda não tem avaliação de qualidade publicada. Sem chave, retorna apenas a busca e a fonte. Ainda não há interface gráfica nem envio automático de peças.
-
-## Critérios para a primeira versão
-
-- Respostas acompanhadas dos trechos que as fundamentam.
-- Indicação clara quando os documentos não contiverem a resposta.
-- Nenhum envio ou publicação automática de peças.
-- Testes com perguntas e respostas esperadas, usando dados fictícios.
-## Como executar
-
-Requer Python 3. A busca local não usa bibliotecas externas.
-
-Na pasta principal do projeto, execute:
-
-```bash
-python exemplos/app.py
-```
-
-Digite uma pergunta, por exemplo: `Qual é o prazo?`
-
-O programa mostrará o trecho encontrado e o nome do documento de origem.
-
-Para executar as verificações manualmente:
-
-```bash
-python -m unittest -v test_busca.py test_resposta_ia.py test_avaliacao_demo.py
-```
-
-Os testes também rodam automaticamente na aba Ações a cada alteração.
-
-## Resposta opcional com IA
-
-O script `resposta_ia.py` usa o trecho da busca para pedir um rascunho ao modelo. Para executar sem chave, basta `python resposta_ia.py`: ele mostra a fonte e o trecho, sem instalar ou chamar a biblioteca `openai`. Perguntas sem correspondência mostram um aviso, mesmo com chave. Para habilitar a geração, crie um ambiente virtual e instale a dependência:
-
-**Windows (PowerShell):**
-
-```powershell
+~~~powershell
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install openai
-python resposta_ia.py
-```
+python -m pip install --require-hashes -r requirements-pdf.txt
+python documentos_web.py
+~~~
 
-**macOS/Linux:**
+**Linux / macOS**
 
-```bash
+~~~bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install openai
-python resposta_ia.py
-```
+python -m pip install --require-hashes -r requirements-pdf.txt
+python documentos_web.py
+~~~
 
-Configure `OPENAI_API_KEY` apenas no ambiente local caso queira usar a API; não é necessária nos testes ou no GitHub Actions. `OPENAI_MODEL` é opcional e o código usa `gpt-5-mini` como padrão. A chamada pode gerar custos e envia a pergunta e o trecho ao provedor. Não inclua chaves ou documentos reais de clientes no repositório. Um rascunho exige revisão humana e não constitui aconselhamento jurídico.
+Abra **http://127.0.0.1:8001** no navegador. Para criar um exemplo fictício, execute em outro terminal com o mesmo ambiente:
 
-## Limites
+~~~bash
+python -m avaliacao.pdf_fixtures
+~~~
 
-A busca seleciona um único trecho por coincidência de palavras; não garante que a cláusula responda à pergunta. Não há avaliação publicada das respostas do modelo, interface gráfica ou publicação de peças. Os testes automatizados cobrem a busca, a fonte, a ausência de correspondência e o caminho sem chave, sem chamar API externa.
+Escolha contrato_demo.pdf na tela. Confira o original, informe seu nome para o registro local e aprove, corrija ou rejeite cada página. Pesquise, por exemplo, “pagamento mensal” ou “prazo de vigência”. Uma página pendente ou rejeitada não entra nos resultados. O botão de download permite conferir o PDF original.
 
-## Avaliação reproduzível
+O servidor escuta somente em 127.0.0.1. Encerre com Ctrl+C. O token de sessão e as verificações de origem protegem o fluxo local; **não substituem login, identidade verificada ou isolamento entre clientes**. Não exponha esta aplicação pela internet ou por túnel. O nome do revisor é autodeclarado.
 
-Execute `python avaliar.py` para comparar a cláusula encontrada com sete perguntas sobre o contrato fictício. O baseline medido foi **5/7 acertos**: a busca não encontrou a data de início quando a pergunta usou «começa» e mostrou a cláusula de rescisão para uma pergunta sobre multa, embora o contrato não informe multa. Encontrar um trecho relacionado **não prova** que ele responde à pergunta. O arquivo `avaliacao/casos.json` contém as expectativas; os testes impedem que o baseline seja descrito como sucesso completo.
+## O que foi implementado
 
-## Interface local de demonstração
+- Extração de texto de PDFs digitais por página, com pypdf fixado por versão e hash.
+- Original e manifesto persistidos em SQLite local, dentro de .documentos/ (ignorado pelo Git).
+- Identificador por hash de origem + versão/configuração do parser; reenvio igual reutiliza o registro e preserva revisões.
+- Falhas e páginas que precisam de OCR são explícitas, sem transformar descarte em sucesso.
+- Revisão ligada ao hash do texto e do original; versão desatualizada é recusada.
+- Correção preserva o texto extraído inicialmente e registra novo hash/decisão.
+- Busca lexical conservadora somente no conteúdo aprovado, com documento, página e hashes de evidência.
+- Interface em português, CLI, testes e avaliação sintética reproduzível.
+- Adaptador opcional para importar saída local do olmOCR; não instala pesos, executa GPU ou chama provedores.
 
-Execute `python demo_web.py` e abra `http://127.0.0.1:8000` no navegador. A página faz apenas a busca local e mostra o trecho e a fonte; não usa a API nem gera peça jurídica. O servidor escuta somente no computador local (`127.0.0.1`) e é uma demonstração, não um serviço de produção. Encerre com Ctrl+C.
+O caminho PDF não utiliza OpenAI, não lê chave de API e não envia documentos a serviços externos. O script opcional resposta_ia.py permanece separado.
+
+## Limites e segurança
+
+Padrões por documento: **10 MiB, 50 páginas, 100 mil caracteres por página, 500 mil por documento e 20 segundos de parser**. Workspace: até 50 documentos ou 128 MiB lógicos no banco; a cota lógica não é limite físico do arquivo SQLite. Não há ingestão pública de TAR/ZIP. PDFs protegidos por senha não são abertos.
+
+O parser roda em subprocesso com prazo máximo. No Linux aplica limites de memória (512 MiB), CPU e arquivo de saída; em Windows/macOS esses limites de recurso não são aplicados e isso aparece no manifesto. **Subprocesso não é uma sandbox completa.** Antes de aceitar arquivos hostis ou dados de clientes em produção, exigir isolamento de runtime, autenticação, política de retenção e testes de autorização.
+
+A extração pode perder estrutura, campos ou texto. Páginas com pouco texto são sinalizadas, mas esse indicador não mede precisão e não distingue perfeitamente scan, página vazia e conteúdo ilegível. Revisão humana continua obrigatória. A busca retorna evidências, não uma interpretação jurídica; todos os termos relevantes precisam estar na página e sinônimos podem gerar abstenção.
+
+Documentos e banco são ignorados pelo Git; não os force para o repositório. O banco não é criptografado. O operador é responsável pelas permissões, retenção, backups e exclusão da workspace local. O serviço não autentica revisores nem oferece operação multitenant.
+
+## olmOCR opcional
+
+O contrato é a importação de **um registro Dolma JSON/JSONL** já produzido em ambiente externo autorizado. Ela valida fonte, hash declarado de origem, número de páginas, offsets, limites e ausência de fallback. Exige nome do modelo e revisão fixa (SHA de 40 caracteres). Nova importação invalida as aprovações; o conteúdo só fica disponível para busca após nova revisão.
+
+Veja [docs/olmocr.md](docs/olmocr.md). **A inferência olmOCR não foi executada ou avaliada nesta entrega.** Não há dependência de vLLM/Transformers no laboratório. Código/adaptador original deste projeto não transfere a autoria do motor Ai2; os termos do motor, pesos e dados continuam independentes.
+
+## Verificações reproduzíveis
+
+~~~bash
+python -m unittest discover -v
+python avaliar_pdf.py --strict
+python avaliar.py
+~~~
+
+A suíte padrão cobre o fluxo PDF e mantém os testes existentes TXT. O teste de browser é ignorado localmente salvo habilitação explícita. Para executar a mesma verificação do CI:
+
+~~~bash
+python -m pip install -r requirements-dev.txt
+python -m playwright install chromium
+# Linux/macOS:
+PDF_BROWSER_TESTS=1 python -m unittest discover -v
+# PowerShell: $env:PDF_BROWSER_TESTS="1"; python -m unittest discover -v
+~~~
+
+Em Linux sem dependências do browser, instalar com playwright install --with-deps chromium em ambiente de testes apropriado.
+
+[avaliacao/resultados_pdf.json](avaliacao/resultados_pdf.json) registra **7/7 casos**, CER/WER normalizados iguais a zero no PDF digital sintético de três páginas. O corpus cobre acentos, data, moeda, uma cláusula negativa e duas abstenções. Isso mede apenas esse exemplo controlado: **não comprova qualidade em scans, tabelas, documentos reais, inferência GPU ou respostas jurídicas**. O teste de revisão usa uma identidade fictícia; não equivale a uma avaliação por especialistas.
+
+O baseline anterior TXT continua **5/7** no corpus anterior; não comparar diretamente as duas taxas, pois os documentos e casos diferem. GitHub Actions verifica Python 3.11/3.12, testes sem chave, browser, lint e alertas conhecidos da dependência PDF.
+
+## Consulta TXT existente
+
+A busca original não precisa instalar dependências:
+
+~~~bash
+python exemplos/app.py
+python demo_web.py
+~~~
+
+A interface TXT fica em http://127.0.0.1:8000 e continua independente da interface PDF. Seu baseline e expectativas estão em avaliacao/casos.json.
+
+## Rascunho opcional com IA
+
+python resposta_ia.py retorna a busca TXT sem chave, sem instalar ou importar openai. Quando não há trecho, abstém-se mesmo se existir chave no ambiente.
+
+Para habilitar o caminho opcional, instale openai em ambiente separado e configure OPENAI_API_KEY apenas localmente; OPENAI_MODEL é opcional. A chamada pode gerar custos e envia pergunta/trecho ao provedor. Não publique chaves. Este caminho não recebe automaticamente o banco PDF e ainda não tem avaliação publicada de respostas do modelo.
+
+## Próximos critérios de evolução
+
+1. Corpus PT-BR representativo e autorizado, incluindo scans/tabelas e campos críticos conferidos.
+2. Escolha de executor/provedor e orçamento antes de rodar inferência real.
+3. Runtime OCR com versões compatíveis corrigidas, revisões/digests fixos e nova análise de dependências.
+4. Auth e revisão verificadas, isolamento por cliente, retenção e recuperação antes de serviço remoto.
+5. Avaliação separada de extração, recuperação, citação, geração e abstenção.
+
+A decisão de arquitetura está em [docs/adr/0001-ingestao-pdf-local.md](docs/adr/0001-ingestao-pdf-local.md).
