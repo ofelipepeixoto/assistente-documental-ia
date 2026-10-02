@@ -37,7 +37,7 @@ jobs:
 
       - name: Verificar novos módulos
         run: |
-          ruff check ingestion documentos_web.py avaliar_pdf.py avaliacao/pdf_fixtures.py test_pdf.py test_pdf_web.py test_pdf_browser.py ollama_provider.py resposta_ollama.py test_ollama.py
+          ruff check ingestion documentos_web.py avaliar_pdf.py avaliacao/pdf_fixtures.py test_pdf.py test_pdf_web.py test_pdf_browser.py ollama_provider.py resposta_ollama.py test_ollama.py test_docling.py
           python -m compileall -q ingestion documentos_web.py ollama_provider.py resposta_ollama.py
 
       - name: Verificar dependência PDF

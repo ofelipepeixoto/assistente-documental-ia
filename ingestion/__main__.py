@@ -21,6 +21,8 @@ def main():
     commands = parser.add_subparsers(dest="command", required=True)
     ingest = commands.add_parser("ingerir")
     ingest.add_argument("pdf")
+    ingest.add_argument("--parser", choices=["pypdf", "docling"], default="pypdf")
+    ingest.add_argument("--artefatos", help="Diretório local de modelos Docling já provisionados")
     commands.add_parser("listar")
     show = commands.add_parser("mostrar")
     show.add_argument("id")
@@ -45,7 +47,8 @@ def main():
     store = Store(args.pasta)
     try:
         if args.command == "ingerir":
-            result = store.ingest(read_bounded(args.pdf, Limits().max_bytes), Path(args.pdf).name)
+            result = store.ingest(read_bounded(args.pdf, Limits().max_bytes), Path(args.pdf).name,
+                                  parser=args.parser, artifacts=args.artefatos)
         elif args.command == "listar":
             result = store.list()
         elif args.command == "mostrar":

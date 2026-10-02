@@ -72,8 +72,8 @@ class Store:
             rows = db.execute("SELECT manifest FROM documents ORDER BY id").fetchall()
         return [json.loads(row[0]) for row in rows]
 
-    def ingest(self, data, name, limits=None):
-        limits = limits or Limits()
+    def ingest(self, data, name, limits=None, *, parser="pypdf", artifacts=None):
+        limits = limits or Limits(timeout_seconds=120 if parser == "docling" else 20)
         name = clean_name(name)
         if not isinstance(data, bytes) or not data or len(data) > limits.max_bytes or not data.startswith(b"%PDF-"):
             raise LabError("Escolha um PDF válido de até 10 MiB (limite padrão).")
@@ -82,6 +82,11 @@ class Store:
         except ImportError:
             raise LabError("Instale requirements-pdf.txt para usar PDFs.") from None
         config = {"pipeline": PIPELINE_VERSION, "parser_version": __version__, "limits": asdict(limits)}
+        if parser == "docling":
+            from ingestion.docling_adapter import configuration
+            config.update(configuration(artifacts))
+        elif parser != "pypdf":
+            raise LabError("Parser desconhecido.")
         source_sha = digest(data)
         document_id = digest((source_sha + json.dumps(config, sort_keys=True)).encode())
         with self.lock:
@@ -89,7 +94,9 @@ class Store:
                 return self.get(document_id)
             except LabError:
                 pass
-            result = extract(data, limits)
+            result = extract(data, limits) if parser == "pypdf" else extract(
+                data, limits, parser=parser, artifacts=artifacts
+            )
             pages = [
                 {**p, "extracted_text": p["text"], "review": None}
                 for p in result["pages"]
