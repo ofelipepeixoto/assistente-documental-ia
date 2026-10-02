@@ -1,0 +1,4 @@
+# Ferramentas de CI; não necessárias para usar o laboratório.
+ruff==0.15.8
+pip-audit==2.10.1
+playwright==1.58.0

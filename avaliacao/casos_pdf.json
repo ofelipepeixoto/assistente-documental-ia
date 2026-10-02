@@ -1,0 +1,9 @@
+[
+  {"pergunta": "Qual é o prazo de vigência?", "paginas": [1], "campos": ["12 meses"]},
+  {"pergunta": "Qual é o pagamento mensal?", "paginas": [2], "campos": ["R$ 1.250,50"]},
+  {"pergunta": "vigência começa", "paginas": [1], "campos": ["01/10/2026"]},
+  {"pergunta": "multa rescisão", "paginas": [2], "campos": ["Não há multa"]},
+  {"pergunta": "aviso antecedência", "paginas": [3], "campos": ["30 dias"]},
+  {"pergunta": "Qual é a cor do logotipo?", "paginas": [], "campos": []},
+  {"pergunta": "penalidade criminal", "paginas": [], "campos": []}
+]
