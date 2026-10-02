@@ -9,6 +9,8 @@ import unittest
 
 from avaliacao.pdf_fixtures import make_pdf
 from documentos_web import MAX_REQUEST_BYTES, Server
+from ingestion.contracts import LabError
+from ingestion.olmocr import import_output
 from ingestion.store import Store
 
 
@@ -86,6 +88,49 @@ class HttpPdfTests(unittest.TestCase):
         status, error, _ = self.call("/api/review", body)
         self.assertEqual(status, 400)
         self.assertIn("mudou", error["error"])
+
+    def test_invalid_reviewer_unicode_returns_error_without_mutation(self):
+        doc = self.ingest()
+        for reviewer in ("\ud800", "\udfff"):
+            with self.subTest(reviewer=ascii(reviewer)):
+                status, error, _ = self.call("/api/review", {
+                    "id": doc["id"], "page_number": 1, "revision": doc["revision"],
+                    "reviewer": reviewer, "decision": "approved",
+                })
+                self.assertEqual(status, 400)
+                self.assertIsInstance(error["error"], str)
+                persisted = self.store.get(doc["id"])
+                self.assertEqual(persisted["revision"], doc["revision"])
+                self.assertEqual(persisted["events"], doc["events"])
+                self.assertEqual(persisted, doc)
+                status, reloaded, _ = self.call("/api/documents/" + doc["id"])
+                self.assertEqual((status, reloaded), (200, doc))
+
+    def test_invalid_ocr_version_unicode_preserves_readable_manifest(self):
+        doc = self.ingest()
+        text, spans = "", []
+        for page in doc["pages"]:
+            start = len(text)
+            text += page["text"]
+            spans.append([start, len(text), page["page_number"]])
+        for version in ("\ud800", "\udfff"):
+            with self.subTest(version=ascii(version)):
+                record = {
+                    "source": "olmocr", "text": text,
+                    "metadata": {"Source-File": "origem.pdf", "pdf-total-pages": len(spans),
+                                 "total-fallback-pages": 0, "olmocr-version": version},
+                    "attributes": {"pdf_page_numbers": spans},
+                }
+                with self.assertRaisesRegex(LabError, "Saída OCR inválida"):
+                    import_output(self.store, doc["id"], json.dumps(record).encode(),
+                                  expected_revision=doc["revision"], source_sha256=doc["source_sha256"],
+                                  source_file="origem.pdf", model="modelo", model_revision="a" * 40)
+                persisted = self.store.get(doc["id"])
+                self.assertEqual(persisted["revision"], doc["revision"])
+                self.assertEqual(persisted["events"], doc["events"])
+                self.assertEqual(persisted, doc)
+                status, reloaded, _ = self.call("/api/documents/" + doc["id"])
+                self.assertEqual((status, reloaded), (200, doc))
 
     def test_size_type_base64_path_and_busy_are_bounded(self):
         self.assertEqual(self.call("/api/ingest", {}, extra_headers={"Content-Length": str(MAX_REQUEST_BYTES + 1)})[0], 413)

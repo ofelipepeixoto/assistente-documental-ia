@@ -2,6 +2,8 @@
 
 Laboratório para consultar documentos com fontes e revisão humana. A nova etapa PDF funciona localmente: **abrir arquivo → conferir páginas → aprovar ou corrigir → pesquisar trechos citados**.
 
+Há duas interfaces web locais: PDF em `documentos_web.py` (porta 8001) e TXT em `demo_web.py` (porta 8000). Os comandos de instalação e execução de cada caminho estão abaixo.
+
 Use exemplos fictícios ou documentos que você tem autorização para processar. Não há publicação de peças, aconselhamento jurídico ou aprovação automática.
 
 ## Testar a interface PDF
@@ -103,9 +105,41 @@ A interface TXT fica em http://127.0.0.1:8000 e continua independente da interfa
 
 ## Rascunho opcional com IA
 
-python resposta_ia.py retorna a busca TXT sem chave, sem instalar ou importar openai. Quando não há trecho, abstém-se mesmo se existir chave no ambiente.
+`resposta_ia.py` consulta os arquivos TXT de `exemplos/`; ele não consulta o SQLite nem as páginas PDF aprovadas. Sem `OPENAI_API_KEY`, devolve o trecho e a fonte encontrados, sem instalar ou importar o SDK `openai`. Quando não há trecho, abstém-se mesmo se existir chave no ambiente.
 
-Para habilitar o caminho opcional, instale openai em ambiente separado e configure OPENAI_API_KEY apenas localmente; OPENAI_MODEL é opcional. A chamada pode gerar custos e envia pergunta/trecho ao provedor. Não publique chaves. Este caminho não recebe automaticamente o banco PDF e ainda não tem avaliação publicada de respostas do modelo.
+Para testar a execução sem chave em qualquer terminal com Python, este comando remove a variável somente do processo do teste e preserva o ambiente do terminal:
+
+~~~bash
+python -c "import os, runpy; os.environ.pop('OPENAI_API_KEY', None); runpy.run_path('resposta_ia.py', run_name='__main__')"
+~~~
+
+Digite `Qual é o prazo?`. O resultado esperado começa com `Chave de API não configurada` e inclui a fonte `contrato_ficticio.txt` e a cláusula 2. Perguntas sem correspondência exibem `Não encontrei`.
+
+Para usar o caminho de geração opcional, crie um ambiente separado na pasta do projeto e instale o SDK:
+
+**Windows / PowerShell**
+
+~~~powershell
+py -m venv .venv-ia
+.\.venv-ia\Scripts\Activate.ps1
+python -m pip install openai
+~~~
+
+**Linux / macOS**
+
+~~~bash
+python3 -m venv .venv-ia
+source .venv-ia/bin/activate
+python -m pip install openai
+~~~
+
+Defina `OPENAI_API_KEY` somente na configuração privada de variáveis desse ambiente, por um mecanismo seguro. Não coloque a chave no código, em argumentos de comando, no chat ou em commits. `OPENAI_MODEL` é opcional; o código usa `gpt-5-mini` como padrão. Depois de configurar a chave e autorizar o envio e os custos, execute:
+
+~~~bash
+python resposta_ia.py
+~~~
+
+O script pede a pergunta no terminal. Se encontrar um trecho TXT, a geração envia a pergunta e esse trecho à OpenAI com `store=False` e retorna um rascunho para revisão humana junto da fonte. A chamada pode gerar custos. A resposta do modelo ainda não tem avaliação publicada neste laboratório. A suíte automatizada verifica o caminho sem chave e a abstenção sem trecho, sem executar uma geração real.
 
 ## Próximos critérios de evolução
 

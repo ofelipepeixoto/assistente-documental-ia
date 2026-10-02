@@ -36,6 +36,7 @@ def import_output(store, document_id, raw, *, expected_revision, source_sha256, 
             raise ValueError
         if len(metadata["olmocr-version"]) > 64:
             raise ValueError
+        metadata["olmocr-version"].encode("utf-8")
         if not isinstance(text, str) or len(text) > document["config"]["limits"]["max_document_chars"]:
             raise ValueError
         text.encode("utf-8")

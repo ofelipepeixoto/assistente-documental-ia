@@ -136,6 +136,10 @@ class Store:
     def review(self, document_id, page_number, expected_revision, reviewer, decision, corrected_text=None):
         if decision not in {"approved", "rejected"} or not isinstance(reviewer, str) or not reviewer.strip() or len(reviewer) > 100:
             raise LabError("Informe seu nome e uma decisão válida.")
+        try:
+            reviewer.encode("utf-8")
+        except UnicodeError:
+            raise LabError("Nome do revisor com codificação inválida.") from None
 
         def change(manifest):
             if type(page_number) is not int or not 1 <= page_number <= len(manifest["pages"]):
