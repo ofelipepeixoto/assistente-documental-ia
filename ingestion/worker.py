@@ -8,14 +8,14 @@ import sys
 from ingestion.contracts import Limits
 
 
-def resource_limits(seconds):
+def resource_limits(seconds, memory_mib=512):
     if sys.platform != "linux":
         return False
     try:
         import resource
     except ImportError:
         return False
-    resource.setrlimit(resource.RLIMIT_AS, (512 * 1024 * 1024,) * 2)
+    resource.setrlimit(resource.RLIMIT_AS, (memory_mib * 1024 * 1024,) * 2)
     resource.setrlimit(resource.RLIMIT_CPU, (seconds, seconds + 1))
     resource.setrlimit(resource.RLIMIT_FSIZE, (6 * 1024 * 1024,) * 2)
     return True
@@ -51,12 +51,17 @@ def parse(data, limits):
 
 def main():
     limits = Limits(**json.loads(sys.argv[2]))
-    capped = resource_limits(limits.timeout_seconds)
+    parser = sys.argv[3] if len(sys.argv) > 3 else "pypdf"
+    capped = resource_limits(limits.timeout_seconds, 4096 if parser == "docling" else 512)
     data = sys.stdin.buffer.read(limits.max_bytes + 1)
     try:
-        result = parse(data, limits)
+        if parser == "docling":
+            from ingestion.docling_adapter import parse_docling
+            result = parse_docling(data, limits, sys.argv[4])
+        else:
+            result = parse(data, limits)
     except Exception:
-        result = {"pages": [], "error": "pdf_parse_failed", "parser": "pypdf"}
+        result = {"pages": [], "error": "pdf_parse_failed", "parser": parser}
     result["resource_limits_applied"] = capped
     Path(sys.argv[1]).write_text(json.dumps(result, ensure_ascii=False), encoding="utf-8")
 

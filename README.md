@@ -150,3 +150,11 @@ O script pede a pergunta no terminal. Se encontrar um trecho TXT, a geração en
 5. Avaliação separada de extração, recuperação, citação, geração e abstenção.
 
 A decisão de arquitetura está em [docs/adr/0001-ingestao-pdf-local.md](docs/adr/0001-ingestao-pdf-local.md).
+
+## Docling opcional
+
+O adaptador Docling reutiliza este mesmo fluxo de revisão PDF pela CLI, com pesos
+locais, identidade por parser/configuração e limites explícitos. Veja
+[docs/docling.md](docs/docling.md) para instalação, execução, créditos e limitações.
+O teste de conversão real exige pesos locais; nesta execução seu download foi
+bloqueado por HTTP 403. Testes de contrato não comprovam qualidade de extração.
