@@ -1,4 +1,4 @@
-name: Verificar busca documental
+name: Verificar busca e ingestão documental
 
 on:
   push:
@@ -10,13 +10,45 @@ permissions:
 jobs:
   testes:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        python: ["3.11", "3.12"]
 
     steps:
       - name: Obter arquivos do projeto
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Configurar Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Instalar dependências
+        run: |
+          python -m pip install --require-hashes -r requirements-pdf.txt
+          python -m pip install -r requirements-dev.txt
+          python -m pip install --no-deps -r requirements-evidence.txt
+
+      - name: Instalar browser de testes
+        run: python -m playwright install --with-deps chromium
 
       - name: Executar verificações sem chave de API
-        run: env -u OPENAI_API_KEY python3 -m unittest -v test_busca.py test_resposta_ia.py test_avaliacao_demo.py
+        run: env -u OPENAI_API_KEY PDF_BROWSER_TESTS=1 python -m unittest discover -v
+
+      - name: Verificar novos módulos
+        run: |
+          ruff check ingestion documentos_web.py avaliar_pdf.py avaliacao/pdf_fixtures.py test_pdf.py test_pdf_web.py test_pdf_browser.py ollama_provider.py resposta_ollama.py test_ollama.py test_docling.py
+          python -m compileall -q ingestion documentos_web.py ollama_provider.py resposta_ollama.py
+          ruff check exportar_evidencias.py tests resposta_ia.py test_resposta_ia.py
+
+      - name: Verificar dependência PDF
+        run: pip-audit --strict --no-deps --disable-pip -r requirements-pdf.txt
 
       - name: Medir baseline da busca
         run: python3 avaliar.py
+
+      - name: Avaliar corpus sintético PT-BR
+        run: python avaliar_pdf.py --strict

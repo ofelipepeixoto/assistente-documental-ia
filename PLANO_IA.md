@@ -1,23 +1,30 @@
-# Próxima etapa: avaliar a resposta apoiada no documento
+# Próxima etapa: geração com autorização e orçamento
 
-`resposta_ia.py` já contém um caminho opcional de geração via API. A qualidade dos rascunhos gerados ainda não foi avaliada; as verificações automatizadas não fazem chamadas externas.
+A busca TXT e o fluxo PDF funcionam localmente sem LLM. `resposta_ia.py` mantém
+as evidências e a abstenção; geração OpenAI está bloqueada inclusive quando há
+chave, até existir integração com os controles abaixo. A presença de uma chave
+não constitui aprovação de envio nem liberação de gasto.
 
-## Entrada
-Pergunta do usuário e trechos encontrados nos documentos fictícios.
+## Antes de habilitar geração paga
 
-## Saída
-Um rascunho de resposta com:
-- resposta em linguagem simples;
-- nome do documento e trecho usado;
-- aviso quando não houver informação suficiente;
-- indicação de que o texto precisa de revisão humana.
+1. Derivar identidade e escopo no consumidor autenticado; não aceitar identidade
+   verificada ou autorização como booleanos do JSON de entrada.
+2. Validar a revisão atual e os hashes no Store, com documentos autorizados pelo
+   consumidor. Revisão local continua autodeclarada.
+3. Configurar preços e limite explicitamente num domínio protegido. Não inferir
+   tarifa ou orçamento a partir de instruções do usuário/documento.
+4. Reservar o máximo de custo previsto atomicamente em armazenamento persistente,
+   com idempotência, antes da chamada; falha na reserva impede inferência.
+5. Reconciliar consumo e resultado, tratando timeout/resultado desconhecido sem
+   duplicar chamadas ou liberar valores de forma insegura.
+6. Avaliar resposta, suporte das citações e abstenção no corpus PT-BR autorizado.
 
-## Limites
-- A busca lê arquivos `.txt` da pasta de exemplos antes de enviar o trecho. Isso não garante que o trecho selecionado seja suficiente ou que o modelo não erre.
-- Nenhuma peça será enviada, assinada ou publicada automaticamente.
-- Chaves de API não serão colocadas no repositório.
-- A busca atual continuará disponível como referência para comparação.
+Nenhuma peça é enviada, assinada ou publicada automaticamente. O módulo de
+budget do Integration Hub não governa este consumidor Python por proximidade de
+repositórios; a integração real precisa de contrato e testes próprios.
 
-## Verificação
-Comparar o rascunho com respostas esperadas para perguntas sobre prazo,
-pagamento, rescisão e informações ausentes no documento.
+## Verificação atual
+
+Testes locais cobrem a busca, fonte, ausência de trecho, chave configurada com
+API bloqueada e integridade/revisão dos snapshots. Não há avaliação publicada de
+resposta de modelo, chamada paga ou benchmark de inferência nesta entrega.

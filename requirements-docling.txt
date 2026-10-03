@@ -1,0 +1,2 @@
+# Opcional, separado do runtime padrão. Motor upstream MIT; pesos têm termos próprios.
+docling==2.55.1

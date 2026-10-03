@@ -40,6 +40,22 @@ class TestRespostaSemApi(unittest.TestCase):
 
         self.assertIn("Não encontrei", resultado)
 
+    def test_chave_nao_libera_custo_ou_envio_sem_controle_persistente(self):
+        original_import = builtins.__import__
+
+        def impedir_openai(name, *args, **kwargs):
+            if name == "openai":
+                raise AssertionError("Budget ausente: não importar ou chamar SDK")
+            return original_import(name, *args, **kwargs)
+
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "chave-ficticia"}), patch(
+            "builtins.__import__", side_effect=impedir_openai
+        ):
+            resultado = responder("Qual é o prazo?")
+        self.assertIn("Geração paga bloqueada", resultado)
+        self.assertIn("reserva atômica", resultado)
+        self.assertIn("contrato_ficticio.txt", resultado)
+
 
 if __name__ == "__main__":
     unittest.main()
