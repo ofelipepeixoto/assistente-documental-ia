@@ -1,3 +1,3 @@
 # Optional original library; no Semantica runtime dependency.
-# Transitional source of truth until radar-evidence-kit is extracted.
-radar-evidence-kit @ git+https://github.com/ofelipepeixoto/avaliacao-rag-juridico.git@2fb8059d55974795c9db7bd4fa2540d4f5af5d2a#subdirectory=packages/radar-evidence-kit
+# Standalone original repository, fixed to an immutable commit.
+radar-evidence-kit @ git+https://github.com/ofelipepeixoto/radar-evidence-kit.git@3127be7de1a57d3dc8d7a4d233d454e155c735ea

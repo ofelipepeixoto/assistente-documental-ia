@@ -150,8 +150,11 @@ python -m pip install --no-deps -r requirements-evidence.txt
 python exportar_evidencias.py --help
 ~~~
 
-O arquivo fixa a biblioteca autoral radar-evidence-kit por commit. Semantica
-não é instalado neste caminho. O adapter valida original, texto e revisão,
+O commit exato da biblioteca autoral fica fixado em `requirements-evidence.txt`,
+também usado pelo CI. A biblioteca vem do repositório separado
+[ofelipepeixoto/radar-evidence-kit](https://github.com/ofelipepeixoto/radar-evidence-kit)
+com autoria de Carlos Felipe e licença MIT. A instalação pode acessar a rede; a exportação é local.
+O adapter valida original, texto e revisão,
 preserva o nome local como rótulo e mantém identidade não verificada.
 Veja [docs/evidencias.md](docs/evidencias.md) para selecionar documentos/revisões
 e guardar o JSON com texto integral. Escopo e snapshot não concedem autorização.

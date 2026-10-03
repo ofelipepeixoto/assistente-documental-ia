@@ -5,18 +5,21 @@ local. Não chama LLM, baixa modelo, usa rede ou executa ações. O fluxo de
 ingestão/revisão existente continua independente da biblioteca opcional.
 
 O adapter usa `radar-evidence-kit` 0.1.0, pacote original sem dependências
-externas. No desenvolvimento coordenado com os dois projetos lado a lado:
+externas. A biblioteca tem seu próprio repositório autoral,
+[ofelipepeixoto/radar-evidence-kit](https://github.com/ofelipepeixoto/radar-evidence-kit),
+com autoria de Carlos Felipe e licença MIT. O commit exato utilizado pelo consumidor
+fica fixado em `requirements-evidence.txt`; esse arquivo também é usado pelo CI.
+Instale a biblioteca no mesmo ambiente Python que contém `requirements-pdf.txt`:
 
 ```sh
-python -m pip install ../avaliacao/packages/radar-evidence-kit
+python -m pip install --no-deps -r requirements-evidence.txt
 python -m unittest tests.test_evidence_adapter -v
 ```
 
-Também foi verificado sem instalação, definindo
-`PYTHONPATH=../avaliacao/packages/radar-evidence-kit/src` no comando de testes.
-A origem e a revisão fixa usadas pelo CI ficam em `requirements-evidence.txt`;
-sem o kit, somente esta exportação retorna um erro claro. Use o mesmo ambiente
-Python que contém `requirements-pdf.txt`.
+A instalação usa a origem e a revisão registradas nesse arquivo, sem depender
+de um checkout vizinho. A instalação da biblioteca pode acessar a rede; a
+exportação documental continua local. Sem o kit, somente esta exportação
+retorna um erro claro.
 
 Liste os documentos com `python -m ingestion listar`. Depois de revisar uma
 página, use o ID e a **revisão atual** do documento, que muda a cada revisão:
