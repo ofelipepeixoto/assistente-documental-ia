@@ -14,24 +14,11 @@ def responder(pergunta):
             + trecho
         )
 
-    from openai import OpenAI
-
-    resposta = OpenAI().responses.create(
-        model=os.getenv("OPENAI_MODEL", "gpt-5-mini"),
-        store=False,
-        instructions=(
-            "Você prepara um rascunho para revisão humana. "
-            "Responda somente com base no trecho fornecido. "
-            "Se ele não sustentar a resposta, diga que não há "
-            "informação suficiente. Não invente fatos nem apresente "
-            "o texto como aconselhamento jurídico."
-        ),
-        input=f"Pergunta: {pergunta}\n\n{trecho}",
-    )
-
     return (
-        f"Rascunho para revisão humana:\n{resposta.output_text}\n\n"
-        f"{trecho}"
+        "Geração paga bloqueada neste laboratório: falta integrar autorização "
+        "e orçamento persistente com reserva atômica e reconciliação. "
+        "A chave configurada não libera chamadas. A busca encontrou:\n\n"
+        + trecho
     )
 
 

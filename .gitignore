@@ -151,6 +151,7 @@ activemq-data/
 .env
 .envrc
 .venv
+.venv-ia/
 env/
 venv/
 ENV/
@@ -216,3 +217,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Documentos e estado privado do laboratório PDF nunca devem ir ao GitHub.
+.documentos/
+*.sqlite3
+*.sqlite3-*
+*.pdf
