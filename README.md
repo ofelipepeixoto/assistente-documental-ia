@@ -141,6 +141,21 @@ python resposta_ia.py
 
 O script pede a pergunta no terminal. Se encontrar um trecho TXT, a geração envia a pergunta e esse trecho à OpenAI com `store=False` e retorna um rascunho para revisão humana junto da fonte. A chamada pode gerar custos. A resposta do modelo ainda não tem avaliação publicada neste laboratório. A suíte automatizada verifica o caminho sem chave e a abstenção sem trecho, sem executar uma geração real.
 
+## Exportação opcional de evidências
+
+Para exportar um snapshot local das páginas aprovadas:
+
+~~~bash
+python -m pip install --no-deps -r requirements-evidence.txt
+python exportar_evidencias.py --help
+~~~
+
+O arquivo fixa a biblioteca autoral radar-evidence-kit por commit. Semantica
+não é instalado neste caminho. O adapter valida original, texto e revisão,
+preserva o nome local como rótulo e mantém identidade não verificada.
+Veja [docs/evidencias.md](docs/evidencias.md) para selecionar documentos/revisões
+e guardar o JSON com texto integral. Escopo e snapshot não concedem autorização.
+
 ## Próximos critérios de evolução
 
 1. Corpus PT-BR representativo e autorizado, incluindo scans/tabelas e campos críticos conferidos.

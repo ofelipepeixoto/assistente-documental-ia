@@ -28,6 +28,7 @@ jobs:
         run: |
           python -m pip install --require-hashes -r requirements-pdf.txt
           python -m pip install -r requirements-dev.txt
+          python -m pip install --no-deps -r requirements-evidence.txt
 
       - name: Instalar browser de testes
         run: python -m playwright install --with-deps chromium
@@ -39,6 +40,7 @@ jobs:
         run: |
           ruff check ingestion documentos_web.py avaliar_pdf.py avaliacao/pdf_fixtures.py test_pdf.py test_pdf_web.py test_pdf_browser.py ollama_provider.py resposta_ollama.py test_ollama.py
           python -m compileall -q ingestion documentos_web.py ollama_provider.py resposta_ollama.py
+          ruff check exportar_evidencias.py tests/test_evidence_adapter.py
 
       - name: Verificar dependência PDF
         run: pip-audit --strict --no-deps --disable-pip -r requirements-pdf.txt
