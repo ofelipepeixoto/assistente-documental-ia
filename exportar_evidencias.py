@@ -31,6 +31,8 @@ def main(argv=None):
     parser.add_argument("--pasta", default=".documentos", help="Workspace local já existente")
     parser.add_argument("--tenant", required=True, help="Rótulo de escopo escolhido pelo operador; não é login")
     parser.add_argument("--projeto", required=True, help="Rótulo de projeto escolhido pelo operador")
+    parser.add_argument("--trechos", action="store_true",
+                        help="Exportar referências a janelas de 512 caracteres, sobreposição 64")
     parser.add_argument("--documento", type=document_revision, action="append", required=True,
                         metavar="ID:REVISAO", help="Documento/revisão selecionado pelo operador; pode repetir")
     args = parser.parse_args(argv)
@@ -43,22 +45,32 @@ def main(argv=None):
         if not (Path(args.pasta) / "lab.sqlite3").is_file():
             raise LabError("Workspace documental não encontrado; nenhum banco foi criado.")
         store = Store(args.pasta)
-        evidence = export_approved_evidence(
-            store, tenant_id=args.tenant, project_id=args.projeto,
-            expected_revisions=revisions,
-        )
-        from radar_evidence import Scope
+        if args.trechos:
+            from ingestion.passages import export_passage_snapshot
+            payload = export_passage_snapshot(
+                store, tenant_id=args.tenant, project_id=args.projeto,
+                expected_revisions=revisions,
+            )
+        else:
+            evidence = export_approved_evidence(
+                store, tenant_id=args.tenant, project_id=args.projeto,
+                expected_revisions=revisions,
+            )
+            from radar_evidence import Scope
 
-        scope = Scope(tenant_id=args.tenant, project_id=args.projeto, current_revisions=revisions)
-        payload = {
-            "schema_version": 1,
-            "kind": "documental_evidence_snapshot",
-            "scope": scope.to_dict(),
-            "evidence": [{"evidence_id": item.evidence_id, "record": item.to_dict()} for item in evidence],
-        }
+            scope = Scope(tenant_id=args.tenant, project_id=args.projeto, current_revisions=revisions)
+            payload = {
+                "schema_version": 1,
+                "kind": "documental_evidence_snapshot",
+                "scope": scope.to_dict(),
+                "evidence": [{"evidence_id": item.evidence_id, "record": item.to_dict()} for item in evidence],
+            }
     except (LabError, OSError, sqlite3.Error, json.JSONDecodeError) as exc:
         parser.exit(1, f"Não foi possível exportar: {exc if isinstance(exc, LabError) else 'workspace indisponível'}\n")
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    if args.trechos:
+        print(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), end="")
+    else:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":
