@@ -170,3 +170,11 @@ locais, identidade por parser/configuração e limites explícitos. Veja
 [docs/docling.md](docs/docling.md) para instalação, execução, créditos e limitações.
 O teste de conversão real exige pesos locais; nesta execução seu download foi
 bloqueado por HTTP 403. Testes de contrato não comprovam qualidade de extração.
+
+## Piloto adicional de memória revisável
+
+Decisão B — STUDY: [interface local de revisão](docs/memoria-revisavel.md)
+em `memoria_web.py`, opcional na porta 8002. Notas derivadas de páginas aprovadas
+precisam de revisão por versão/hash, preservam identidade local não autenticada
+e permitem corrigir, desfazer e esquecer. Sem provider ou runtime exxperts.
+Leia instalação/pin do Evidence Kit e limites antes de habilitar o piloto.
