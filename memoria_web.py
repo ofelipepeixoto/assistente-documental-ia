@@ -68,6 +68,7 @@ for(const [action,label] of (kind==='active'?[['undo','Desfazer aprovação'],['
 if(action==='forget'&&!window.confirm('Apagar todas as versões desta nota do banco ativo?'))return;
 await request('/api/'+action,{note_id:note.note_id,proposal_hash:action==='forget'?(note.latest_proposal_hash||note.proposal_hash):note.proposal_hash,actor:el('actor').value});await refresh();message('Alteração registrada.');}));parent.append(card);}}
 async function refresh(){const data=await request('/api/state');el('sources').replaceChildren();
+if(data.source_unavailable)message('Fontes indisponíveis: leitura e aprovação bloqueadas. Você pode esquecer notas na área de gestão.');
 for(const item of data.sources){const label=document.createElement('label');const box=document.createElement('input');box.type='checkbox';box.value=item.id;
 label.append(box,document.createTextNode('Documento '+item.document_id.slice(0,12)+' · página '+item.page+' · versão '+item.revision));
 label.append(button('Ler fonte',()=>source(item.id,label)));el('sources').append(label);}

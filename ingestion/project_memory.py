@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 """Optional single-operator memory; source writes serialized with decisions."""
 from contextlib import contextmanager
+import sqlite3
 import time
 
 from ingestion.contracts import LabError
@@ -21,41 +22,57 @@ class ProjectMemory:
         self.memory = MemoryStore(store.path.with_name("memory.sqlite3"), local_review=True)
 
     @contextmanager
-    def current(self):
+    def current(self, *, permit_source_failure=False):
         from radar_evidence import Scope
         # Reserved SQLite source write lock blocks writers in other processes,
         # not just threads sharing this Store. Reads on other connections work.
         # Lock order is always source -> memory. No source data is changed here.
         with self.store.lock, self.store.connection() as guard:
             guard.execute("BEGIN IMMEDIATE")
-            documents = self.store.list()
-            revisions = {doc["id"]: doc["revision"] for doc in documents}
-            scope = Scope(self.tenant, self.project, revisions)
-            sources = export_approved_evidence(
-                self.store, tenant_id=self.tenant, project_id=self.project,
-                expected_revisions=revisions,
-            ) if revisions else []
+            self.source_unavailable = False
+            try:
+                documents = self.store.list()
+                revisions = {doc["id"]: doc["revision"] for doc in documents}
+                scope = Scope(self.tenant, self.project, revisions)
+                sources = export_approved_evidence(
+                    self.store, tenant_id=self.tenant, project_id=self.project,
+                    expected_revisions=revisions,
+                ) if revisions else []
+            except (LabError, ValueError, TypeError, KeyError, sqlite3.Error):
+                if not permit_source_failure:
+                    raise
+                self.source_unavailable = True
+                scope, sources = Scope(self.tenant, self.project, {}), []
             yield scope, {source.evidence_id: source for source in sources}
 
     def state(self):
-        with self.current() as (scope, sources):
-            now = self.clock()
-            active = self.memory.recall(scope=scope, sources=list(sources.values()), now=now)
-            latest = self.memory.latest(scope=scope)
-            heads = {note["note_id"]: note for note in latest}
-            pending = self.memory.pending(scope=scope, now=now)
-            visible = {note["note_id"] for note in active + pending}
-            for note in active:
-                note["latest_proposal_hash"] = heads[note["note_id"]]["proposal_hash"]
-                note["latest_version"] = heads[note["note_id"]]["version"]
-            return dict(
-                active=active, pending=pending,
-                archived=[note for note in latest if note["note_id"] not in visible],
-                sources=[dict(id=key, document_id=value.document_id, page=value.page,
-                              revision=value.revision, source_sha256=value.source_sha256,
-                              identity_verified=False) for key, value in sources.items()],
-                identity_verified=False,
-            )
+        from radar_evidence import Scope
+        try:
+            with self.current(permit_source_failure=True) as (scope, sources):
+                return self._state(scope, sources, self.source_unavailable)
+        except sqlite3.Error:
+            # Even an unreadable source database must not hide discard receipts.
+            return self._state(Scope(self.tenant, self.project, {}), {}, True)
+
+    def _state(self, scope, sources, unavailable):
+        now = self.clock()
+        active = self.memory.recall(scope=scope, sources=list(sources.values()), now=now)
+        latest = self.memory.latest(scope=scope)
+        heads = {note["note_id"]: note for note in latest}
+        pending = self.memory.pending(scope=scope, now=now)
+        visible = {note["proposal_hash"] for note in active + pending}
+        for note in active:
+            note["latest_proposal_hash"] = heads[note["note_id"]]["proposal_hash"]
+            note["latest_version"] = heads[note["note_id"]]["version"]
+        return dict(
+            active=active, pending=pending,
+            archived=[note for note in latest if note["proposal_hash"] not in visible],
+            source_unavailable=unavailable,
+            sources=[dict(id=key, document_id=value.document_id, page=value.page,
+                          revision=value.revision, source_sha256=value.source_sha256,
+                          identity_verified=False) for key, value in sources.items()],
+            identity_verified=False,
+        )
 
     def source(self, evidence_id):
         with self.current() as (_, sources):
@@ -73,6 +90,11 @@ class ProjectMemory:
         }
         if action not in required or type(body) is not dict or set(body) != required[action]:
             raise LabError("Solicitação de memória inválida.")
+        if action == "forget":
+            from radar_evidence import Scope
+            self.memory.forget(scope=Scope(self.tenant, self.project, {}), note_id=body["note_id"],
+                               proposal_hash=body["proposal_hash"], actor=body["actor"], now=self.clock())
+            return {"ok": True, "identity_verified": False}
         with self.current() as (scope, sources):
             now = self.clock()
             if action == "propose":
@@ -92,6 +114,4 @@ class ProjectMemory:
                                    sources=list(sources.values()))
             elif action == "undo":
                 self.memory.undo(**args, actor=body["actor"], sources=list(sources.values()))
-            else:
-                self.memory.forget(**args, actor=body["actor"])
             return {"ok": True, "identity_verified": False}

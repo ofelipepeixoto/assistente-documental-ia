@@ -25,6 +25,9 @@ corrigir, criar nova proposta com mesmo identificador; não altera aprovação
 anterior até a nova revisão. Desfazer retorna aprovação anterior elegível.
 Esquecer exige confirmação e recibo da versão mais recente, inclusive após undo.
 Notas rejeitadas ou retiradas ficam na área de gestão para correção/descarte.
+A gestão distingue versões por hash: um head desfeito/rejeitado continua
+visível mesmo quando uma versão anterior da mesma nota está ativa. Undo usa
+o predecessor ativo registrado na aprovação, sem ressuscitar versões desfeitas.
 
 Validade fixa de sete dias; notas vencidas não aparecem na leitura aprovada.
 Ao iniciar servidor, `purge_expired` remove payload vencido. Durante uma sessão
@@ -47,6 +50,9 @@ memória: escritores de outros processos aguardam. Ordem de locks: fonte,
 depois memória. Não se faz alteração de fonte pela interface de memória.
 Respostas são snapshots: uma mudança depois da resposta exige atualização da
 tela; a decisão sempre verifica novamente. Fonte obsoleta não pode ser aprovada.
+Se um original/página impede exportação, a leitura aprovada fica vazia e a tela
+informa indisponibilidade, mantendo gestão de notas. Descarte exige somente
+escopo fixo e recibo atual: não depende de reparar ou reexportar as fontes.
 
 Loopback obrigatório, token efêmero de sessão, Host/Origin restritos, limite
 64 KiB por POST, JSON com campos exatos, sem logs de conteúdo, CSP e rendering
@@ -56,6 +62,8 @@ login. Não disponibilizar por proxy público ou como serviço multitenant.
 ## Persistência, backup e rollback
 
 `.documentos/memory.sqlite3` é privado 0600, mas armazena texto em claro.
+0600 vale em POSIX; no Windows, o operador deve restringir ACLs. Abertura usa
+O_NOFOLLOW quando disponível, sem alegar proteção contra corrida de path no Windows.
 Limites do Kit: 4 KiB UTF-8/nota, 1.000 versões, 10.000 eventos. Quotas falham
 fechado, sem limpeza silenciosa de recibos. Hashes não são assinaturas; o dono
 do banco pode reescrever registros. Não há promessa de auditoria inviolável.

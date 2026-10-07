@@ -13,6 +13,7 @@ from avaliacao.pdf_fixtures import make_pdf
 from ingestion.project_memory import ProjectMemory
 from ingestion.store import Store
 from memoria_web import MAX_BODY, Server
+from radar_evidence import Scope
 
 
 class Fixture:
@@ -86,8 +87,43 @@ class ConsumerTests(Fixture, unittest.TestCase):
         self.approve(self.proposal())
         with self.store.connection() as db:
             db.execute("UPDATE documents SET original=?", (b"tampered",))
-        with self.assertRaises(ValueError):
-            self.consumer.state()
+        state = self.consumer.state()
+        self.assertTrue(state["source_unavailable"])
+        self.assertEqual(state["active"], [])
+
+    def test_corrupt_unrelated_source_cannot_block_discard(self):
+        draft = self.proposal()
+        self.approve(draft)
+        other = self.store.ingest(make_pdf(["Outra fonte."]), "other.pdf")
+        with self.store.connection() as db:
+            db.execute("UPDATE documents SET original=? WHERE id=?", (b"tampered", other["id"]))
+        state = self.consumer.state()
+        self.assertTrue(state["source_unavailable"])
+        self.assertEqual(state["archived"][0]["proposal_hash"], draft["proposal_hash"])
+        self.consumer.apply("forget", dict(note_id=draft["note_id"], proposal_hash=draft["proposal_hash"], actor="operator"))
+        self.assertEqual(self.consumer.state()["archived"], [])
+        self.assertEqual(self.consumer.memory.latest(scope=Scope("local-operator", "documental-lab", {})), [])
+
+    def test_unreadable_source_database_still_allows_discard(self):
+        draft = self.proposal()
+        self.approve(draft)
+        self.store.path.write_bytes(b"not a database")
+        state = self.consumer.state()
+        self.assertTrue(state["source_unavailable"])
+        self.assertEqual(state["active"], [])
+        self.assertEqual(state["archived"][0]["proposal_hash"], draft["proposal_hash"])
+        self.consumer.apply("forget", dict(note_id=draft["note_id"], proposal_hash=draft["proposal_hash"], actor="operator"))
+        self.assertEqual(self.consumer.state()["archived"], [])
+
+    def test_archive_distinguishes_withdrawn_version_from_active_note(self):
+        first = self.proposal()
+        self.approve(first)
+        second = self.proposal("Versão depois desfeita.")
+        self.approve(second)
+        self.consumer.apply("undo", dict(note_id=second["note_id"], proposal_hash=second["proposal_hash"], actor="operator"))
+        state = self.consumer.state()
+        self.assertEqual(state["active"][0]["proposal_hash"], first["proposal_hash"])
+        self.assertEqual(state["archived"][0]["proposal_hash"], second["proposal_hash"])
 
     def test_undo_forget_and_ttl(self):
         first = self.proposal()
