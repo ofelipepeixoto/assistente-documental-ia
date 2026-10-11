@@ -4,8 +4,9 @@ Este adapter opcional lê a workspace PDF já existente e gera um snapshot JSON
 local. Não chama LLM, baixa modelo, usa rede ou executa ações. O fluxo de
 ingestão/revisão existente continua independente da biblioteca opcional.
 
-O adapter usa `radar-evidence-kit` 0.1.0, pacote original sem dependências
-externas. A biblioteca tem seu próprio repositório autoral,
+O adapter usa `radar-evidence-kit` 0.2.0, pacote original sem dependências
+externas. O contrato original permanece compatível; `--trechos` habilita o
+[novo snapshot com citações](trechos.md). A biblioteca tem seu próprio repositório autoral,
 [ofelipepeixoto/radar-evidence-kit](https://github.com/ofelipepeixoto/radar-evidence-kit),
 com autoria de Carlos Felipe e licença MIT. O commit exato utilizado pelo consumidor
 fica fixado em `requirements-evidence.txt`; esse arquivo também é usado pelo CI.
