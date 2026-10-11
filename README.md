@@ -1,5 +1,7 @@
 # Assistente documental com IA
 
+[English](README_EN.md) · [Demonstração e estudo de caso](docs/portfolio/CASE_STUDY.md) · [Contribuir](CONTRIBUTING.md)
+
 Laboratório para consultar documentos com fontes e revisão humana. A nova etapa PDF funciona localmente: **abrir arquivo → conferir páginas → aprovar ou corrigir → pesquisar trechos citados**.
 
 Há duas interfaces web locais: PDF em `documentos_web.py` (porta 8001) e TXT em `demo_web.py` (porta 8000). Os comandos de instalação e execução de cada caminho estão abaixo.
