@@ -1,0 +1,14 @@
+{
+  "source_commit": "cae6e1e94d2ac4e70d10770b75cc52a839e97e3c",
+  "synthetic_data": true,
+  "media": {
+    "demo.png": {
+      "bytes": 81662,
+      "sha256": "9ee0ddcc3193663fb6c6ce705504f1204909992da6aea9682477430fe3fe0046"
+    },
+    "demo.mp4": {
+      "bytes": 146279,
+      "sha256": "c33a10d544a766ecc4c32130c9acae63e2c6e72fa1eac640d36001d6940ac335"
+    }
+  }
+}

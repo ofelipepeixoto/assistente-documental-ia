@@ -1,0 +1,23 @@
+name: Proposta de contribuição / Contribution proposal
+description: Uma melhoria pequena e verificável / A focused, reproducible improvement
+title: "[Contribuição] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema e resultado esperado / Problem and expected result
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reprodução com dados fictícios / Synthetic reproduction
+      description: Não inclua credenciais, documentos reais ou dados pessoais.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Critérios de aceite e limites / Acceptance criteria and limits
+    validations:
+      required: true
