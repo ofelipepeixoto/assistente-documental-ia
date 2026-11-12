@@ -139,6 +139,9 @@ Nenhuma inferência Ollama ou GPU foi executada nesta integração.
 
 ## Exportação opcional de evidências
 
+O novo modo `--trechos` preserva a página revisada e exporta referências de
+janela verificáveis no Store atual. Veja [contrato e limites](docs/trechos.md).
+
 Para exportar um snapshot local das páginas aprovadas:
 
 ~~~bash
