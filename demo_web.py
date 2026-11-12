@@ -23,6 +23,8 @@ def pagina(pergunta="", resultado=""):
 
 
 class Handler(BaseHTTPRequestHandler):
+    timeout = 5
+
     def responder(self, status, corpo):
         dados = corpo.encode("utf-8")
         self.send_response(status)
@@ -39,10 +41,24 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path != "/":
             return self.responder(404, "Página não encontrada")
-        tamanho = int(self.headers.get("Content-Length", "0"))
+        lengths = self.headers.get_all("Content-Length", [])
+        if self.headers.get("Transfer-Encoding") is not None or len(lengths) != 1:
+            return self.responder(400, "Requisição inválida")
+        raw_length = lengths[0]
+        if not raw_length.isascii() or not raw_length.isdecimal() or len(raw_length) > 10:
+            return self.responder(400, "Requisição inválida")
+        tamanho = int(raw_length)
         if tamanho > 4096:
             return self.responder(413, "Pergunta muito longa")
-        campos = parse_qs(self.rfile.read(tamanho).decode("utf-8"))
+        try:
+            body = self.rfile.read(tamanho)
+            if len(body) != tamanho:
+                return self.responder(400, "Requisição incompleta")
+            campos = parse_qs(body.decode("utf-8"), max_num_fields=100)
+        except TimeoutError:
+            return self.responder(408, "Tempo de leitura excedido")
+        except (UnicodeDecodeError, ValueError):
+            return self.responder(400, "Requisição inválida")
         pergunta = campos.get("pergunta", [""])[0].strip()[:500]
         self.responder(200, pagina(pergunta, buscar(pergunta) if pergunta else "Digite uma pergunta."))
 
